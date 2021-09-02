@@ -5,10 +5,16 @@
     "samridhdhi-infra": "bin/samridhdhi-infra.js"
   },
   "scripts": {
+    "setup": "npm install",
     "build": "tsc",
     "watch": "tsc -w",
     "test": "jest",
-    "cdk": "cdk"
+    "clean": "rm -rf node_modules && npm run cdk:clean",
+    "cdk:setup": "aws configure --profile=samridhdhi",
+    "cdk:bootstrap": "cdk bootstrap --profile=samridhdhi",
+    "cdk:synth": "cdk synth --profile=samridhdhi",
+    "cdk:deploy": "cdk deploy --profile=samridhdhi",
+    "cdk:clean": "rm -rf cdk.out"
   },
   "devDependencies": {
     "@aws-cdk/assert": "1.117.0",
@@ -21,6 +27,7 @@
     "typescript": "~3.9.7"
   },
   "dependencies": {
+    "@aws-cdk/aws-ec2": "^1.121.0",
     "@aws-cdk/core": "1.117.0",
     "source-map-support": "^0.5.16"
   }
