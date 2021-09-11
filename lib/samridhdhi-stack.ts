@@ -1,3 +1,4 @@
+import { CfnEIP, CfnEIPAssociation } from '@aws-cdk/aws-ec2'
 import { Construct, Stack, StackProps } from '@aws-cdk/core'
 import { OPERATIONAL_AZ } from './config'
 import { VPC } from './constructs/vpc'
@@ -14,6 +15,13 @@ export class SamridhdhiStack extends Stack {
 
     this.server = new WordpressServer(this, 'WP-Server', {
       vpc: this.vpc.vpc,
+    })
+
+    // Create and associate Elastic IP with server
+    const eip = new CfnEIP(this, 'ElasticIP', {})
+    new CfnEIPAssociation(this, 'ElasticIpAssociation', {
+      eip: eip.ref,
+      instanceId: this.server.instance.instanceId,
     })
   }
 
