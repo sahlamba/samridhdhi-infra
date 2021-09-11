@@ -2,13 +2,28 @@ import {
   AclCidr,
   AclTraffic,
   Action,
+  BlockDeviceVolume,
+  EbsDeviceVolumeType,
+  Instance,
+  InstanceType,
+  ISecurityGroup,
   IVpc,
+  MachineImage,
   NetworkAcl,
+  Peer,
+  Port,
+  SecurityGroup,
   SubnetType,
   TrafficDirection,
   Vpc,
 } from '@aws-cdk/aws-ec2'
 import { Construct, Stack, StackProps, Tags } from '@aws-cdk/core'
+
+const OPERATIONAL_AZ = 'ap-south-1a'
+
+const OPEN_LITESPEED_AMI_ID = {
+  'ap-south-1': 'ami-06a61b40694daf873',
+}
 
 type AclConfig = {
   cidrs: Array<{ name: string; type: AclCidr }>
@@ -21,11 +36,13 @@ type AclConfig = {
 
 export class SamridhdhiInfraStack extends Stack {
   readonly vpc: IVpc
+  readonly instance: Instance
+  readonly securityGroups: ISecurityGroup[]
 
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props)
 
-    this.vpc = new Vpc(this, 'Test-VPC', {
+    this.vpc = new Vpc(this, 'VPC', {
       maxAzs: this.availabilityZones.length,
       natGateways: 0,
       subnetConfiguration: [
@@ -37,10 +54,34 @@ export class SamridhdhiInfraStack extends Stack {
     })
 
     this.configureNetworkAcl()
+    this.securityGroups = this.configureSecurityGroups()
+
+    const volume = BlockDeviceVolume.ebs(20, {
+      deleteOnTermination: false,
+      volumeType: EbsDeviceVolumeType.GENERAL_PURPOSE_SSD,
+    })
+
+    this.instance = new Instance(this, 'EC2-Instance', {
+      instanceName: 'Samridhdhi-WebServer',
+      vpc: this.vpc,
+      machineImage: MachineImage.genericLinux({
+        'ap-south-1': OPEN_LITESPEED_AMI_ID['ap-south-1'],
+      }),
+      instanceType: new InstanceType('t2.micro'),
+      availabilityZone: OPERATIONAL_AZ,
+      keyName: 'samridhdhi_test',
+      blockDevices: [
+        {
+          deviceName: '/dev/sda1',
+          volume,
+        },
+      ],
+      securityGroup: this.securityGroups[0], // Pick first as default
+    })
   }
 
   get availabilityZones(): string[] {
-    return ['ap-south-1a']
+    return [OPERATIONAL_AZ]
   }
 
   private configureNetworkAcl() {
@@ -105,5 +146,48 @@ export class SamridhdhiInfraStack extends Stack {
         currentRule += ruleNumber.increment
       })
     })
+  }
+
+  private configureSecurityGroups(): ISecurityGroup[] {
+    const webOnlySG = new SecurityGroup(this, 'WebOnly-SG', {
+      vpc: this.vpc,
+      allowAllOutbound: true,
+      securityGroupName: 'Web Access Only',
+    })
+
+    webOnlySG.addIngressRule(
+      Peer.anyIpv4(),
+      Port.tcp(80),
+      'Allow inbound HTTP for ipv4',
+    )
+    webOnlySG.addIngressRule(
+      Peer.anyIpv4(),
+      Port.tcp(443),
+      'Allow inbound HTTPS for ipv4',
+    )
+
+    const webWithSshSG = new SecurityGroup(this, 'Web-SSH-SG', {
+      vpc: this.vpc,
+      allowAllOutbound: true,
+      securityGroupName: 'Web + SSH',
+    })
+
+    webWithSshSG.addIngressRule(
+      Peer.anyIpv4(),
+      Port.tcp(80),
+      'Allow inbound HTTP for ipv4',
+    )
+    webWithSshSG.addIngressRule(
+      Peer.anyIpv4(),
+      Port.tcp(443),
+      'Allow inbound HTTPS for ipv4',
+    )
+    webWithSshSG.addIngressRule(
+      Peer.anyIpv4(),
+      Port.tcp(22),
+      'Allow inbound SSH for ipv4',
+    )
+
+    return [webOnlySG, webWithSshSG]
   }
 }
