@@ -13,7 +13,7 @@ import {
   SecurityGroup,
 } from '@aws-cdk/aws-ec2'
 import { Construct } from '@aws-cdk/core'
-import { OPERATIONAL_AZ, OPERATIONAL_REGION } from '../config'
+import { OPERATIONAL_AZ, OPERATIONAL_REGION, SSH_KEY_NAME } from '../config'
 
 // WordPress with LiteSpeed Cache: https://aws.amazon.com/marketplace/pp/B07KSC2QQN
 const OPEN_LITESPEED_AMI_ID = {
@@ -51,7 +51,7 @@ export class WordpressServer extends Construct {
       }),
       instanceType: new InstanceType('t2.micro'),
       availabilityZone: OPERATIONAL_AZ,
-      keyName: 'samridhdhi_test',
+      keyName: SSH_KEY_NAME,
       blockDevices: [
         {
           deviceName: '/dev/sda1',
