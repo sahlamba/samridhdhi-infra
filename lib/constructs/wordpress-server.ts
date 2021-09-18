@@ -12,7 +12,7 @@ import {
   Port,
   SecurityGroup,
 } from '@aws-cdk/aws-ec2'
-import { Construct } from '@aws-cdk/core'
+import { Construct, RemovalPolicy } from '@aws-cdk/core'
 import { OPERATIONAL_AZ, OPERATIONAL_REGION, SSH_KEY_NAME } from '../config'
 
 // WordPress with LiteSpeed Cache: https://aws.amazon.com/marketplace/pp/B07KSC2QQN
@@ -31,7 +31,7 @@ type SecurityGroupConfig = {
 export class WordpressServer extends Construct {
   readonly volume: BlockDeviceVolume
   readonly securityGroups: ISecurityGroup[]
-  readonly instance: IInstance
+  readonly instance: Instance
 
   constructor(scope: Construct, id: string, props: ServerProps) {
     super(scope, id)
@@ -60,6 +60,8 @@ export class WordpressServer extends Construct {
       ],
       securityGroup: this.securityGroups[0], // Pick first as default
     })
+
+    this.instance.applyRemovalPolicy(RemovalPolicy.RETAIN)
   }
 
   private configureSecurityGroups(props: ServerProps): ISecurityGroup[] {
