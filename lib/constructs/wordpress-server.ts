@@ -17,7 +17,7 @@ import { OPERATIONAL_AZ, OPERATIONAL_REGION, SSH_KEY_NAME } from '../config'
 
 // WordPress with LiteSpeed Cache: https://aws.amazon.com/marketplace/pp/B07KSC2QQN
 const OPEN_LITESPEED_AMI_ID = {
-  'ap-south-1': 'ami-06a61b40694daf873',
+  'ap-south-1': 'ami-0a204872ea7d79049',
 }
 
 export type ServerProps = {
