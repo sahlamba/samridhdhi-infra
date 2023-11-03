@@ -1,7 +1,6 @@
 import {
   BlockDeviceVolume,
   EbsDeviceVolumeType,
-  IInstance,
   Instance,
   InstanceType,
   IPeer,
@@ -15,9 +14,14 @@ import {
 import { Construct, RemovalPolicy } from '@aws-cdk/core'
 import { OPERATIONAL_AZ, OPERATIONAL_REGION, SSH_KEY_NAME } from '../config'
 
-// WordPress with LiteSpeed Cache: https://aws.amazon.com/marketplace/pp/B07KSC2QQN
+// WordPress with LiteSpeed Cache: https://aws.amazon.com/marketplace/pp/prodview-welmqpneba3qa
+//
+// # Why?
+// This server is recommended as it is very lightweight allowing it to efficiently run on an
+// AWS free-tier t2.micro instance. Other WordPress images on the AWS marketplace, such as the
+// one by Bitnami, are heavy and generally fail to stabilize on such a small instance size.
 const OPEN_LITESPEED_AMI_ID = {
-  'ap-south-1': 'ami-0a204872ea7d79049',
+  'ap-south-1': 'ami-0263b95642064a255',
 }
 
 export type ServerProps = {
