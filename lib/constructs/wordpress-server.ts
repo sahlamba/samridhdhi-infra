@@ -21,7 +21,7 @@ import { OPERATIONAL_AZ, OPERATIONAL_REGION, SSH_KEY_NAME } from '../config'
 // AWS free-tier t2.micro instance. Other WordPress images on the AWS marketplace, such as the
 // one by Bitnami, are heavy and generally fail to stabilize on such a small instance size.
 const OPEN_LITESPEED_AMI_ID = {
-  'ap-south-1': 'ami-0263b95642064a255',
+  'ap-south-1': 'ami-0036413cb8affaaaa',
 }
 
 export type ServerProps = {
